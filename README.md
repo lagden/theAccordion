@@ -12,7 +12,7 @@ Simple Accordion plugin
 Install with [Bower](http://bower.io):
 
 ```
-bower install --save jquery.theAccordion.js
+bower install --save theAccordion
 ```
 
 The component can be used as an AMD module or a global.
