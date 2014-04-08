@@ -1,0 +1,6 @@
+{
+    "volo": {
+        "url": "https://raw.githubusercontent.com/lagden/theAccordion/{version}/jquery.theAccordion.js"
+    },
+    "main": "jquery.theAccordion.js"
+}

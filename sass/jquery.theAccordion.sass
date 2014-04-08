@@ -1,0 +1,35 @@
+@import compass
+
+.theAccordion
+    display: block
+
+.theAccordion__block
+    display: block
+    overflow: hidden
+    position: relative
+    margin-bottom: 10px
+    &:last-child
+        margin-bottom: 0
+
+.theAccordion__handler
+    position: relative
+    cursor: pointer
+    background-color: red
+    color: white
+    padding: 5px
+
+.theAccordion__handler--title
+    margin: 0
+
+.theAccordion__content
+    margin: 0
+    overflow: hidden
+    > .content
+        padding: 10px
+        background-color: lighten(gray, 40%)
+
+.icon-minus:before
+    content: "-"
+
+.icon-plus:before
+    content: "+"

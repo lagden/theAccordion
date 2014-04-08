@@ -1,0 +1,42 @@
+.theAccordion {
+  display: block;
+}
+
+.theAccordion__block {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
+}
+.theAccordion__block:last-child {
+  margin-bottom: 0;
+}
+
+.theAccordion__handler {
+  position: relative;
+  cursor: pointer;
+  background-color: red;
+  color: white;
+  padding: 5px;
+}
+
+.theAccordion__handler--title {
+  margin: 0;
+}
+
+.theAccordion__content {
+  margin: 0;
+  overflow: hidden;
+}
+.theAccordion__content > .content {
+  padding: 10px;
+  background-color: #e6e6e6;
+}
+
+.icon-minus:before {
+  content: "-";
+}
+
+.icon-plus:before {
+  content: "+";
+}

@@ -1,0 +1,31 @@
+{
+  "name": "jquery.theAccordion.js",
+  "description": "Simple accordion",
+  "version": "0.1.0",
+  "author": "Thiago Lagden",
+  "main": [
+    "jquery.theAccordion.js",
+    "jquery.theAccordion.css"
+  ],
+  "keyword": [
+    "accordion",
+    "ui",
+    "simple"
+  ],
+  "ignore": [
+    ".sass-cache",
+    ".bowerrc",
+    ".git",
+    ".gitignore",
+    "config.rb",
+    "bower.json",
+    "package.json",
+    "README.md",
+    "sass",
+    "example"
+  ],
+  "dependencies": {
+    "jquery": ">= 1.9.0",
+    "greensock": "~1.11.6"
+  }
+}
