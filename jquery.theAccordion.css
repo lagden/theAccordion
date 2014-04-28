@@ -1,5 +1,6 @@
 .theAccordion {
   display: block;
+  margin-bottom: 10px;
 }
 
 .theAccordion__block {
@@ -13,6 +14,10 @@
 }
 
 .theAccordion__handler {
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
   position: relative;
   cursor: pointer;
   background-color: red;
@@ -24,11 +29,13 @@
   margin: 0;
 }
 
-.theAccordion__content {
+.theAccordion__canvas {
   margin: 0;
+  padding: 0;
   overflow: hidden;
 }
-.theAccordion__content > .content {
+
+.theAccordion__content {
   padding: 10px;
   background-color: #e6e6e6;
 }

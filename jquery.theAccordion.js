@@ -5,10 +5,8 @@
 
 (function(factory) {
     if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
         define(['jquery', 'greensock/TweenMax'], factory);
     } else {
-        // Browser globals
         factory(jQuery, TweenMax);
     }
 }(function($, TM) {
@@ -20,6 +18,7 @@
             block: '> .theAccordion__block',
             handler: '> .theAccordion__handler:first',
             icon: '> .theAccordion__handler > .theAccordion__handler--title > span:first',
+            canvas: '> .theAccordion__canvas:first',
             content: '> .theAccordion__content:first',
             flag: 'aberto',
             iconPlus: 'icon-plus',
@@ -29,8 +28,8 @@
     function Plugin(element, options) {
         this.element = element;
         this.$element = $(element);
-        this.$blocks;
-        this.blocks = {};
+        this.$blocks = null;
+        this.blocks = [];
         this.options = $.extend({}, defaults, options);
         this._defaults = defaults;
         this._name = pluginName;
@@ -46,53 +45,89 @@
             this.proxy.clica = $.proxy(_onClick, this);
 
             this.$blocks = this.$element.find(this.options.block);
-            this.$blocks.each(function(idx, block){
+            this.$blocks.each(function(idx, block) {
                 var $block = $(block);
                 var $icon = $block.find(that.options.icon);
-                var $content = $block.find(that.options.content);
-                if($content.length === 1) {
+                var $canvas = $block.find(that.options.canvas);
+                var $content = $canvas.find(that.options.content);
+                if ($content.length === 1) {
                     that.mapContentSize[idx] = $content.outerHeight();
-                    TM.set($content, {height: 0});
+                    TM.set($canvas, {
+                        height: 0
+                    });
                 }
-                if(block.id)
-                    that.blocks[el.id] = $block;
 
-                $block.on('click.' + pluginName, that.options.handler, {'block': $block, 'idx': idx, 'content': $content, 'icon': $icon}, that.proxy.clica);
+                that.blocks.push($block);
+
+                $block.on('click.' + pluginName, that.options.handler, {
+                    'block': $block,
+                    'idx': idx,
+                    'canvas': $canvas,
+                    'icon': $icon
+                }, that.proxy.clica);
             });
         },
-        open: function(bloco) {
-            var b = this.blocks[bloco] || false;
-            var handler;
-            if(b) {
-                handler = b.find(this.options.handler);
-                if(handler.length === 1)
-                    handler.trigger('click.' + pluginName);
-            }
+        // Open block
+        open: function(idx) {
+            _toggle.call(this, idx, 'removeClass');
+        },
+        // Close block
+        close: function(idx) {
+            _toggle.call(this, idx, 'addClass');
+        },
+        // Update blocks size
+        update: function() {
+            var that = this;
+            this.$blocks.each(function(idx, block) {
+                var $block = $(block);
+                var $content = $block.find(that.options.canvas + that.options.content);
+                if ($content.length === 1) {
+                    that.mapContentSize[idx] = $content.outerHeight();
+                    if ($block.hasClass(that.options.flag))
+                        that.open(idx);
+                }
+            });
         }
     };
 
     // Private methods
+    function _toggle(idx, cmd) {
+        var $block = this.blocks[idx] || false;
+        var $handler;
+        if ($block) {
+            $block[cmd](this.options.flag);
+            $handler = $block.find(this.options.handler);
+            if ($handler.length === 1)
+                $handler.trigger('click.' + pluginName);
+        }
+    }
+
     function _onClick(event) {
         var that = this;
         event.stopPropagation();
+        event.preventDefault();
 
         var idx = event.data.idx,
             $block = event.data.block,
             $icon = event.data.icon,
-            $content = event.data.content;
+            $canvas = event.data.canvas;
 
-        if($block.hasClass(this.options.flag)) {
-            event.preventDefault();
-            TM.to($content, 0.5, {height: 0, onComplete: function(){
-                $block.removeClass(that.options.flag);
-                $icon.removeClass(that.options.iconMinus).addClass(that.options.iconPlus);
-            }});
-        } else {
-            TM.to($content, 0.5, {height: this.mapContentSize[idx], onComplete: function(){
-                $block.addClass(that.options.flag);
-                $icon.removeClass(that.options.iconPlus).addClass(that.options.iconMinus);
-            }});
-        }
+        if ($block.hasClass(this.options.flag))
+            TM.to($canvas, 0.5, {
+                height: 0,
+                onComplete: function() {
+                    $block.removeClass(that.options.flag);
+                    $icon.removeClass(that.options.iconMinus).addClass(that.options.iconPlus);
+                }
+            });
+        else
+            TM.to($canvas, 0.5, {
+                height: this.mapContentSize[idx],
+                onComplete: function() {
+                    $block.addClass(that.options.flag);
+                    $icon.removeClass(that.options.iconPlus).addClass(that.options.iconMinus);
+                }
+            });
     }
 
     $.fn[pluginName] = function(options) {

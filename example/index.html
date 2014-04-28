@@ -16,8 +16,8 @@
                         <span class="icon-plus"></span> Exemplo 1
                     </h2>
                 </div>
-                <div class="theAccordion__content">
-                    <div class="content">
+                <div class="theAccordion__canvas">
+                    <div class="theAccordion__content" id="addMoreContent">
                         <h3>Example 1</h3>
                         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
                         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
@@ -34,8 +34,8 @@
                         <span class="icon-plus"></span> Exemplo 2
                     </h2>
                 </div>
-                <div class="theAccordion__content">
-                    <div class="content">
+                <div class="theAccordion__canvas">
+                    <div class="theAccordion__content">
                         <h3>Example 2</h3>
                         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
                         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
@@ -49,11 +49,42 @@
         </div>
     </article>
 
+    <button type="button" class="btn" data-cmd="open">Open Exemplo 1</button>
+    <button type="button" class="btn" data-cmd="more">Add more content in Exemplo 1 and update</button>
+    <button type="button" class="btn" data-cmd="close">Close Exemplo 1</button>
+
     <script type="text/javascript" src="../bower_components/greensock/src/uncompressed/TweenMax.js"></script>
     <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="../jquery.theAccordion.js"></script>
     <script type="text/javascript">
-        $('#theAccordion').theAccordion();
+        // Basic
+        var $ta = $('#theAccordion').theAccordion();
+
+        // Api example
+        var $btns = $('.btn');
+        var $more = $('#addMoreContent');
+
+        var cmd = {
+            open: function(){
+                $ta.data('theAccordion').open(0);
+            },
+            more: function(){
+                $more.append('<p>more...</p>');
+                $ta.data('theAccordion').update();
+            },
+            close: function(){
+                $ta.theAccordion('close', 0);
+            }
+        };
+
+        $btns.on('click.example', function(event){
+            var btn = event.currentTarget;
+            var data = btn.dataset.cmd;
+            if(data)
+                cmd[data]();
+            else
+                console.log('invalid command');
+        });
     </script>
 </body>
 </html>
