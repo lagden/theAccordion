@@ -149,7 +149,7 @@ if (!Function.prototype.debounce) {
                 }, this.proxy(events._click));
             }
 
-            $win.on('resize', this.proxy(this.update));
+            $win.on('resize', this.proxy(this.updateDebouce));
         },
 
         // Open block
@@ -162,7 +162,6 @@ if (!Function.prototype.debounce) {
             events._toggle.call(this, idx, 'addClass');
         },
 
-        // Update blocks size
         update: function() {
             for (var i = 0, len = this.$blocks.length; i < len; i++) {
                 var $block = $(this.$blocks[i]);
@@ -173,6 +172,11 @@ if (!Function.prototype.debounce) {
                         this.open(i);
                 }
             }
+        },
+
+        // Update blocks size
+        updateDebouce: function() {
+            this.update();
         }.debounce(500, false),
 
         // Proxy
