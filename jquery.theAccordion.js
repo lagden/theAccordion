@@ -54,7 +54,7 @@ if (!Function.prototype.debounce) {
     var $win = $(window);
 
     var events = {
-        _toggle: function(idx, cmd) {
+        _toggle: function(idx, cmd, callback) {
             var $block = this.blocks[idx] || false;
             var $handler;
             if ($block) {
@@ -62,6 +62,9 @@ if (!Function.prototype.debounce) {
                 $handler = $block.find(this.options.handler);
                 if ($handler.length === 1)
                     $handler.trigger('click.' + pluginName);
+
+                if (callback)
+                    callback(this, $block);
             }
         },
         _click: function(event) {
@@ -96,8 +99,6 @@ if (!Function.prototype.debounce) {
                 });
         }
     }
-
-
 
     var pluginName = 'theAccordion',
         defaults = {
@@ -153,15 +154,16 @@ if (!Function.prototype.debounce) {
         },
 
         // Open block
-        open: function(idx) {
-            events._toggle.call(this, idx, 'removeClass');
+        open: function(idx, callback) {
+            events._toggle.call(this, idx, 'removeClass', callback);
         },
 
         // Close block
-        close: function(idx) {
-            events._toggle.call(this, idx, 'addClass');
+        close: function(idx, callback) {
+            events._toggle.call(this, idx, 'addClass', callback);
         },
 
+        // Update blocks size
         update: function() {
             for (var i = 0, len = this.$blocks.length; i < len; i++) {
                 var $block = $(this.$blocks[i]);
@@ -174,7 +176,7 @@ if (!Function.prototype.debounce) {
             }
         },
 
-        // Update blocks size
+        // Update with debounce
         updateDebouce: function() {
             this.update();
         }.debounce(500, false),

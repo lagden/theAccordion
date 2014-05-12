@@ -66,7 +66,9 @@
 
         var cmd = {
             open: function(){
-                $ta.data('theAccordion').open(0);
+                $ta.data('theAccordion').open(0, function(instance, $block){
+                    console.log(instance, $block);
+                });
             },
             more: function(){
                 $more.append('<p>more...</p>');
