@@ -3,6 +3,44 @@
  * Thiago Lagden | @thiagolagden | lagden@gmail.com
  */
 
+// Debouce
+if (!Function.prototype.debounce) {
+    Function.prototype.debounce = function(wait, immediate) {
+        'use strict';
+
+        var func = this,
+            timeout, args, context, timestamp, result;
+
+        var later = function() {
+            var last = new Date().getTime() - timestamp;
+
+            if (last < wait && last > 0) {
+                timeout = setTimeout(later, wait - last);
+            } else {
+                timeout = null;
+                if (!immediate) {
+                    result = func.apply(context, args);
+                    if (!timeout) context = args = null;
+                }
+            }
+        };
+
+        return function() {
+            context = this;
+            args = arguments;
+            timestamp = new Date().getTime();
+            var callNow = immediate && !timeout;
+            if (!timeout) timeout = setTimeout(later, wait);
+            if (callNow) {
+                result = func.apply(context, args);
+                context = args = null;
+            }
+
+            return result;
+        };
+    };
+}
+
 (function(factory) {
     if (typeof define === 'function' && define.amd) {
         define(['jquery', 'greensock/TweenMax'], factory);
@@ -13,87 +51,53 @@
 
     'use strict';
 
-    (function($, sr) {
+    var $win = $(window);
 
-        // debouncing function from John Hann
-        // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-        var debounce = function(func, threshold, execAsap) {
+    var events = {
+        _toggle: function(idx, cmd) {
+            var $block = this.blocks[idx] || false;
+            var $handler;
+            if ($block) {
+                $block[cmd](this.options.flag);
+                $handler = $block.find(this.options.handler);
+                if ($handler.length === 1)
+                    $handler.trigger('click.' + pluginName);
+            }
+        },
+        _click: function(event) {
+            var that = this;
+            event.stopPropagation();
+            event.preventDefault();
 
-            var timeout;
+            var idx = event.data.idx,
+                $block = event.data.block,
+                $icon = event.data.icon,
+                $canvas = event.data.canvas;
 
-            return function debounced() {
-                var obj = this,
-                    args = arguments;
-
-                function delayed() {
-                    if (!execAsap)
-                        func.apply(obj, args);
-                    timeout = null;
-                };
-
-                if (timeout)
-                    clearTimeout(timeout);
-                else if (execAsap)
-                    func.apply(obj, args);
-
-                timeout = setTimeout(delayed, threshold || 100);
-            };
+            if ($block.hasClass(this.options.flag))
+                TM.to($canvas, 0.5, {
+                    height: 0,
+                    immediateRender: true,
+                    overwrite: 'all',
+                    onComplete: function() {
+                        $block.removeClass(that.options.flag);
+                        $icon.removeClass(that.options.iconMinus).addClass(that.options.iconPlus);
+                    }
+                });
+            else
+                TM.to($canvas, 0.5, {
+                    height: this.mapContentSize[idx],
+                    immediateRender: true,
+                    overwrite: 'all',
+                    onComplete: function() {
+                        $block.addClass(that.options.flag);
+                        $icon.removeClass(that.options.iconPlus).addClass(that.options.iconMinus);
+                    }
+                });
         }
-
-        // smartResize
-        jQuery.fn[sr] = function(fn) {
-            return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr);
-        };
-
-    })(jQuery, 'smartResize');
-
-
-    function _toggle(idx, cmd) {
-        var $block = this.blocks[idx] || false;
-        var $handler;
-        if ($block) {
-            $block[cmd](this.options.flag);
-            $handler = $block.find(this.options.handler);
-            if ($handler.length === 1)
-                $handler.trigger('click.' + pluginName);
-        }
     }
 
-    function _onClick(event) {
-        var that = this;
-        event.stopPropagation();
-        event.preventDefault();
 
-        var idx = event.data.idx,
-            $block = event.data.block,
-            $icon = event.data.icon,
-            $canvas = event.data.canvas;
-
-        if ($block.hasClass(this.options.flag))
-            TM.to($canvas, 0.5, {
-                height: 0,
-                immediateRender: true,
-                overwrite: 'all',
-                onComplete: function() {
-                    $block.removeClass(that.options.flag);
-                    $icon.removeClass(that.options.iconMinus).addClass(that.options.iconPlus);
-                }
-            });
-        else
-            TM.to($canvas, 0.5, {
-                height: this.mapContentSize[idx],
-                immediateRender: true,
-                overwrite: 'all',
-                onComplete: function() {
-                    $block.addClass(that.options.flag);
-                    $icon.removeClass(that.options.iconPlus).addClass(that.options.iconMinus);
-                }
-            });
-    }
-
-    function _resizeEnds(event) {
-        this.update();
-    }
 
     var pluginName = 'theAccordion',
         defaults = {
@@ -116,15 +120,12 @@
         this._defaults = defaults;
         this._name = pluginName;
         this.mapContentSize = [];
-        this.proxy = {};
         this.resizeTimeout = null;
         this.init();
     }
 
     Plugin.prototype = {
         init: function() {
-            this.proxy.clica = $.proxy(_onClick, this);
-
             this.$blocks = this.$element.find(this.options.block);
             for (var i = 0, len = this.$blocks.length; i < len; i++) {
                 var $block = $(this.$blocks[i]);
@@ -145,21 +146,20 @@
                     'idx': i,
                     'canvas': $canvas,
                     'icon': $icon
-                }, this.proxy.clica);
+                }, this.proxy(events._click));
             }
 
-            this.proxy.resize = $.proxy(_resizeEnds, this);
-            $(window).smartResize(this.proxy.resize);
+            $win.on('resize', this.proxy(this.update));
         },
 
         // Open block
         open: function(idx) {
-            _toggle.call(this, idx, 'removeClass');
+            events._toggle.call(this, idx, 'removeClass');
         },
 
         // Close block
         close: function(idx) {
-            _toggle.call(this, idx, 'addClass');
+            events._toggle.call(this, idx, 'addClass');
         },
 
         // Update blocks size
@@ -173,29 +173,13 @@
                         this.open(i);
                 }
             }
-        },
+        }.debounce(500, false),
 
-        // Debounce
-        debounce: function(threshold, execAsap) {
-            var func = this,
-                timeout;
-
-            return function debounced() {
-                var obj = this,
-                    args = arguments;
-
-                function delayed() {
-                    if (!execAsap)
-                        func.apply(obj, args);
-                    timeout = null;
-                };
-
-                if (timeout)
-                    clearTimeout(timeout);
-                else if (execAsap)
-                    func.apply(obj, args);
-
-                timeout = setTimeout(delayed, threshold || 100);
+        // Proxy
+        proxy: function(m) {
+            var that = this;
+            return function() {
+                m.apply(that, arguments);
             };
         }
     };
