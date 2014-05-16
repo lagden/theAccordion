@@ -42,6 +42,7 @@ if (!Function.prototype.debounce) {
 }
 
 (function(factory) {
+    'use strict';
     if (typeof define === 'function' && define.amd) {
         define(['jquery', 'greensock/TweenMax'], factory);
     } else {
@@ -52,53 +53,6 @@ if (!Function.prototype.debounce) {
     'use strict';
 
     var $win = $(window);
-
-    var events = {
-        _toggle: function(idx, cmd, callback) {
-            var $block = this.blocks[idx] || false;
-            var $handler;
-            if ($block) {
-                $block[cmd](this.options.flag);
-                $handler = $block.find(this.options.handler);
-                if ($handler.length === 1)
-                    $handler.trigger('click.' + pluginName);
-
-                if (callback)
-                    callback(this, $block);
-            }
-        },
-        _click: function(event) {
-            var that = this;
-            event.stopPropagation();
-            event.preventDefault();
-
-            var idx = event.data.idx,
-                $block = event.data.block,
-                $icon = event.data.icon,
-                $canvas = event.data.canvas;
-
-            if ($block.hasClass(this.options.flag))
-                TM.to($canvas, 0.5, {
-                    height: 0,
-                    immediateRender: true,
-                    overwrite: 'all',
-                    onComplete: function() {
-                        $block.removeClass(that.options.flag);
-                        $icon.removeClass(that.options.iconMinus).addClass(that.options.iconPlus);
-                    }
-                });
-            else
-                TM.to($canvas, 0.5, {
-                    height: this.mapContentSize[idx],
-                    immediateRender: true,
-                    overwrite: 'all',
-                    onComplete: function() {
-                        $block.addClass(that.options.flag);
-                        $icon.removeClass(that.options.iconPlus).addClass(that.options.iconMinus);
-                    }
-                });
-        }
-    }
 
     var pluginName = 'theAccordion',
         defaults = {
@@ -111,6 +65,22 @@ if (!Function.prototype.debounce) {
             iconPlus: 'icon-plus',
             iconMinus: 'icon-minus'
         };
+
+    var events = {
+        _click: function(idx, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            var $els = this.blocks[idx] || false;
+            if ($els) {
+                var isOpen = $els.$block.hasClass(this.options.flag);
+                var m = (isOpen) ? 'close' : 'open';
+                this[m](idx);
+            }
+        }
+    };
 
     function Plugin(element, options) {
         this.element = element;
@@ -140,27 +110,54 @@ if (!Function.prototype.debounce) {
                     });
                 }
 
-                this.blocks.push($block);
+                var $elements = {
+                    '$block': $block,
+                    '$icon': $icon,
+                    '$canvas': $canvas,
+                    '$content': $content
+                };
 
-                $block.on('click.' + pluginName, this.options.handler, {
-                    'block': $block,
-                    'idx': i,
-                    'canvas': $canvas,
-                    'icon': $icon
-                }, this.proxy(events._click));
+                this.blocks.push($elements);
+                $block.on('click.' + pluginName, this.options.handler, this.proxy(events._click, i, event));
             }
 
-            $win.on('resize', this.proxy(this.updateDebouce));
+            $win.on('resize', this.proxy(this.updateDebouce, event));
         },
 
         // Open block
         open: function(idx, callback) {
-            events._toggle.call(this, idx, 'removeClass', callback);
+            var $els = this.blocks[idx] || false;
+            if ($els) {
+                TM.to($els.$canvas, 0.5, {
+                    height: this.mapContentSize[idx],
+                    immediateRender: true,
+                    overwrite: 'all',
+                    onComplete: function() {
+                        $els.$block.addClass(this.options.flag);
+                        $els.$icon.removeClass(this.options.iconPlus).addClass(this.options.iconMinus);
+                        if (callback)
+                            callback(this, idx, $els);
+                    }.bind(this)
+                });
+            }
         },
 
         // Close block
         close: function(idx, callback) {
-            events._toggle.call(this, idx, 'addClass', callback);
+            var $els = this.blocks[idx] || false;
+            if ($els) {
+                TM.to($els.$canvas, 0.5, {
+                    height: 0,
+                    immediateRender: true,
+                    overwrite: 'all',
+                    onComplete: function() {
+                        $els.$block.removeClass(this.options.flag);
+                        $els.$icon.removeClass(this.options.iconMinus).addClass(this.options.iconPlus);
+                        if (callback)
+                            callback(this, idx, $els);
+                    }.bind(this)
+                });
+            }
         },
 
         // Update blocks size
@@ -168,9 +165,10 @@ if (!Function.prototype.debounce) {
             for (var i = 0, len = this.$blocks.length; i < len; i++) {
                 var $block = $(this.$blocks[i]);
                 var $content = $block.find(this.options.canvas + this.options.content);
+                var isOpen = $block.hasClass(this.options.flag);
                 if ($content.length === 1) {
                     this.mapContentSize[i] = $content.outerHeight();
-                    if ($block.hasClass(this.options.flag))
+                    if (isOpen)
                         this.open(i);
                 }
             }
@@ -183,10 +181,10 @@ if (!Function.prototype.debounce) {
 
         // Proxy
         proxy: function(m) {
-            var that = this;
+            var args = Array.prototype.slice.call(arguments, 1);
             return function() {
-                m.apply(that, arguments);
-            };
+                m.apply(this, args);
+            }.bind(this);
         }
     };
 
