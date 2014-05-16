@@ -72,7 +72,8 @@
             },
             more: function(){
                 $more.append('<p>more...</p>');
-                $ta.data('theAccordion').updateDebouce();
+                // Now, when you use 'append' or 'prepend', we have an option to selfupdate(default: true)
+                // $ta.data('theAccordion').update();
             },
             close: function(){
                 $ta.theAccordion('close', 0);

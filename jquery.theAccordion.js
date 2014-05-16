@@ -41,6 +41,7 @@ if (!Function.prototype.debounce) {
     };
 }
 
+// Plugin
 (function(factory) {
     'use strict';
     if (typeof define === 'function' && define.amd) {
@@ -63,7 +64,8 @@ if (!Function.prototype.debounce) {
             content: ' > .theAccordion__content:first',
             flag: 'aberto',
             iconPlus: 'icon-plus',
-            iconMinus: 'icon-minus'
+            iconMinus: 'icon-minus',
+            selfUpdate: true
         };
 
     var events = {
@@ -79,7 +81,32 @@ if (!Function.prototype.debounce) {
                 var m = (isOpen) ? 'close' : 'open';
                 this[m](idx);
             }
-        }
+        },
+        _update: function(idx, $els) {
+            var $content = $els.$content;
+            var isOpen = $els.$block.hasClass(this.options.flag);
+
+            if ($content.length === 1) {
+                this.mapContentSize[idx] = $content.outerHeight();
+                if (isOpen)
+                    this.open(idx);
+            }
+        },
+        _updateDebouce: function(idx) {
+            this.update(idx);
+        }.debounce(500, false),
+    };
+
+    // Trigger Append Event
+    var oAppend = $.fn.append;
+    $.fn.append = function() {
+        return oAppend.apply(this, arguments).trigger('append.' + pluginName);
+    };
+
+    // Trigger Prepend Event
+    var oPrepend = $.fn.prepend;
+    $.fn.prepend = function() {
+        return oPrepend.apply(this, arguments).trigger('prepend.' + pluginName);
     };
 
     function Plugin(element, options) {
@@ -119,9 +146,12 @@ if (!Function.prototype.debounce) {
 
                 this.blocks.push($elements);
                 $block.on('click.' + pluginName, this.options.handler, this.proxy(events._click, i, event));
+
+                if (this.options.selfUpdate)
+                    $content.on('prepend.' + pluginName + ' ' + 'append.' + pluginName, this.proxy(events._updateDebouce, i, event));
             }
 
-            $win.on('resize', this.proxy(this.updateDebouce, event));
+            $win.on('resize', this.proxy(events._updateDebouce, event));
         },
 
         // Open block
@@ -161,23 +191,21 @@ if (!Function.prototype.debounce) {
         },
 
         // Update blocks size
-        update: function() {
-            for (var i = 0, len = this.$blocks.length; i < len; i++) {
-                var $block = $(this.$blocks[i]);
-                var $content = $block.find(this.options.canvas + this.options.content);
-                var isOpen = $block.hasClass(this.options.flag);
-                if ($content.length === 1) {
-                    this.mapContentSize[i] = $content.outerHeight();
-                    if (isOpen)
-                        this.open(i);
+        update: function(idx, callback) {
+            var $els;
+            if (idx || idx === 0) {
+                $els = this.blocks[idx] || false;
+                if ($els)
+                    this.proxy(events._update, idx, $els)();
+            } else {
+                for (var i = 0, len = this.blocks.length; i < len; i++) {
+                    $els = this.blocks[i];
+                    this.proxy(events._update, i, $els)();
                 }
             }
+            if (callback)
+                callback();
         },
-
-        // Update with debounce
-        updateDebouce: function() {
-            this.update();
-        }.debounce(500, false),
 
         // Proxy
         proxy: function(m) {
