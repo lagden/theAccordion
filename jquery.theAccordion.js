@@ -68,7 +68,7 @@ if (!Function.prototype.debounce) {
             selfUpdate: true
         };
 
-    var events = {
+    var local = {
         _click: function(idx, event) {
             if (event) {
                 event.stopPropagation();
@@ -124,6 +124,12 @@ if (!Function.prototype.debounce) {
 
     Plugin.prototype = {
         init: function() {
+            var events = [
+                'prepend.' + pluginName,
+                'append.' + pluginName,
+                'remove.' + pluginName
+            ];
+
             this.$blocks = this.$element.find(this.options.block);
             for (var i = 0, len = this.$blocks.length; i < len; i++) {
                 var $block = $(this.$blocks[i]);
@@ -145,13 +151,13 @@ if (!Function.prototype.debounce) {
                 };
 
                 this.blocks.push($elements);
-                $block.on('click.' + pluginName, this.options.handler, this.proxy(events._click, i, event));
+                $block.on('click.' + pluginName, this.options.handler, this.proxy(local._click, i, event));
 
                 if (this.options.selfUpdate)
-                    $content.on('prepend.' + pluginName + ' ' + 'append.' + pluginName, this.proxy(events._updateDebouce, i, event));
+                    $content.on(events.join(' '), this.proxy(local._updateDebouce, i, event));
             }
 
-            $win.on('resize', this.proxy(events._updateDebouce, event));
+            $win.on('resize', this.proxy(local._updateDebouce, event));
         },
 
         // Open block
@@ -196,11 +202,11 @@ if (!Function.prototype.debounce) {
             if (idx || idx === 0) {
                 $els = this.blocks[idx] || false;
                 if ($els)
-                    this.proxy(events._update, idx, $els)();
+                    this.proxy(local._update, idx, $els)();
             } else {
                 for (var i = 0, len = this.blocks.length; i < len; i++) {
                     $els = this.blocks[i];
-                    this.proxy(events._update, i, $els)();
+                    this.proxy(local._update, i, $els)();
                 }
             }
             if (callback)

@@ -50,7 +50,8 @@
     </article>
 
     <button type="button" class="btn" data-cmd="open">Open Exemplo 1</button>
-    <button type="button" class="btn" data-cmd="more">Add more content in Exemplo 1 and update</button>
+    <button type="button" class="btn" data-cmd="more">Add more content in Exemplo 1</button>
+    <button type="button" class="btn" data-cmd="less">Remove content in Exemplo 1</button>
     <button type="button" class="btn" data-cmd="close">Close Exemplo 1</button>
 
     <script type="text/javascript" src="../bower_components/greensock/src/uncompressed/TweenMax.js"></script>
@@ -72,8 +73,12 @@
             },
             more: function(){
                 $more.append('<p>more...</p>');
-                // Now, when you use 'append' or 'prepend', we have an option to selfupdate(default: true)
-                // $ta.data('theAccordion').update();
+                // Now, When you append or prepend a content from container, it will update itself.  selfupdate (default: true)
+                //
+                // $ta.data('theAccordion').update(); selfupdate (default: false)
+            },
+            less: function(){
+                $.when($more.find('p:first').remove()).then($ta.data('theAccordion').update());
             },
             close: function(){
                 $ta.theAccordion('close', 0);

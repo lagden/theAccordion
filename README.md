@@ -31,7 +31,7 @@ The component can be used as an AMD module or a global.
 
 ### selfUpdate
 
-When you append or prepend a content in container, itself will update size.
+When you append or prepend a content from container, it will update itself.
 
 ## Api
 
