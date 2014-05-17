@@ -8,15 +8,17 @@
     display: block
     overflow: hidden
     position: relative
-    margin-bottom: 10px
+    margin-bottom: 1px
     &:last-child
         margin-bottom: 0
 
 .theAccordion__handler
+    background-color: rgb(203,96,179)
+    +background-image(linear-gradient(top,  rgba(203,96,179,1) 0%,rgba(173,18,131,1) 50%,rgba(222,71,172,1) 100%))
     +user-select(none)
     position: relative
     cursor: pointer
-    background-color: red
+
     color: white
     padding: 5px
 

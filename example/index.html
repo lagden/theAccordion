@@ -50,40 +50,49 @@
     </article>
 
     <button type="button" class="btn" data-cmd="open">Open Exemplo 1</button>
-    <button type="button" class="btn" data-cmd="more">Add more content in Exemplo 1 and update</button>
+    <button type="button" class="btn" data-cmd="more">Add paragraph content in Exemplo 1</button>
+    <button type="button" class="btn" data-cmd="less">Remove paragraph from the Exemplo 1</button>
     <button type="button" class="btn" data-cmd="close">Close Exemplo 1</button>
 
     <script type="text/javascript" src="../bower_components/greensock/src/uncompressed/TweenMax.js"></script>
     <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="../jquery.theAccordion.js"></script>
     <script type="text/javascript">
-        // Basic
+         // Basic
         var $ta = $('#theAccordion').theAccordion();
 
-        // Api example
+         // Api example
         var $btns = $('.btn');
         var $more = $('#addMoreContent');
 
         var cmd = {
-            open: function(){
-                $ta.data('theAccordion').open(0, function(instance, $block){
+            open: function() {
+                $ta.data('theAccordion').open(0, function(instance, $block) {
                     console.log(instance, $block);
                 });
             },
-            more: function(){
+            more: function() {
                 $more.append('<p>more...</p>');
-                // Now, when you use 'append' or 'prepend', we have an option to selfupdate(default: true)
-                // $ta.data('theAccordion').update();
+                // Now, When you append or prepend a content from container, it will update itself.  selfupdate (default: true)
+                //
+                // $ta.data('theAccordion').update(); selfupdate (default: false)
             },
-            close: function(){
+            less: function() {
+                $.when($more.find('p:first').remove()).then(
+                    function($r) {
+                        $more.trigger('removed.theAccordion');
+                    }
+                );
+            },
+            close: function() {
                 $ta.theAccordion('close', 0);
             }
         };
 
-        $btns.on('click.example', function(event){
+        $btns.on('click.example', function(event) {
             var btn = event.currentTarget;
             var data = btn.dataset.cmd;
-            if(data)
+            if (data)
                 cmd[data]();
             else
                 console.log('invalid command');
