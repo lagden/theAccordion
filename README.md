@@ -33,14 +33,26 @@ The component can be used as an AMD module or a global.
 
 When you append or prepend a content from container, it will update itself.
 
+##### Event removed
+
+Example of usage:
+
+	$.when($container.find('p:first').remove()).then(
+	    function($removed) {
+	        $container.trigger('removed.theAccordion');
+	    }
+	);
+
 ## Api
 
 ### open
 
 Open a block by index.
 
-**idx** `type: int`  
-**callback** `type: function` *optional*
+Param        | Type          | Optional
+------------ | ------------- | ------------
+**idx**      | `int`         | 
+**callback** | `function`    | *
 
 #### Example
 
@@ -48,7 +60,7 @@ Open a block by index.
     
     /* or */
     
-    $el.data('theAccordion').open(0, function(instance, idx, $els){
+    $el.data('theAccordion').open(0, function(instance, idx, $elements){
         console.log('do something!');
     });
     
@@ -56,8 +68,10 @@ Open a block by index.
 
 Close a block by index.
 
-**idx** `type: int`  
-**callback** `type: function` *optional*
+Param        | Type          | Optional
+------------ | ------------- | ------------
+**idx**      | `int`         | 
+**callback** | `function`    | *
 
 #### Example
 
@@ -71,8 +85,10 @@ Close a block by index.
 
 Update canvas size according to the size of the content.
 
-**idx** `type: int` *optional*  
-**callback** `type: function` *optional*
+Param        | Type          | Optional
+------------ | ------------- | ------------
+**idx**      | `int`         | *
+**callback** | `function`    | *
 
 #### Example
 

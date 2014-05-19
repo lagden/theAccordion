@@ -127,7 +127,7 @@ if (!Function.prototype.debounce) {
             var events = [
                 'prepend.' + pluginName,
                 'append.' + pluginName,
-                'remove.' + pluginName
+                'removed.' + pluginName
             ];
 
             this.$blocks = this.$element.find(this.options.block);
