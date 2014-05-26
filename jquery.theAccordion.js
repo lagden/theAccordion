@@ -70,11 +70,6 @@ if (!Function.prototype.debounce) {
 
     var local = {
         _click: function(idx, event) {
-            if (event) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-
             var $els = this.blocks[idx] || false;
             if ($els) {
                 var isOpen = $els.$block.hasClass(this.options.flag);
@@ -151,13 +146,13 @@ if (!Function.prototype.debounce) {
                 };
 
                 this.blocks.push($elements);
-                $block.on('click.' + pluginName, this.options.handler, this.proxy(local._click, i, event));
+                $block.on('click.' + pluginName, this.options.handler, this.proxy(local._click, i));
 
                 if (this.options.selfUpdate)
-                    $content.on(events.join(' '), this.proxy(local._updateDebouce, i, event));
+                    $content.on(events.join(' '), this.proxy(local._updateDebouce, i));
             }
 
-            $win.on('resize', this.proxy(local._updateDebouce, event));
+            $win.on('resize', this.proxy(local._updateDebouce));
         },
 
         // Open block
