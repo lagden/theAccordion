@@ -37,11 +37,13 @@ When you append or prepend a content from container, it will update itself.
 
 Example of usage:
 
-	$.when($container.find('p:first').remove()).then(
-	    function($removed) {
-	        $container.trigger('removed.theAccordion');
-	    }
-	);
+```javascript
+$.when($container.find('p:first').remove()).then(
+    function($removed) {
+        $container.trigger('removed.theAccordion');
+    }
+);
+```
 
 ## Api
 
